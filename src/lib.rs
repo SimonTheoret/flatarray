@@ -63,6 +63,12 @@ impl<T> FlatArray<T> {
     pub fn new(vecs: Vec<Vec<T>>) -> Self {
         Self::from(vecs)
     }
+    pub fn from_raw(content: impl Into<Box<[T]>>, indices: impl Into<Box<[usize]>>) -> Self {
+        Self {
+            content: content.into(),
+            indices: indices.into(),
+        }
+    }
 }
 
 impl<T> FlatArray<T> {
@@ -81,7 +87,10 @@ impl<T> Deref for FlatArray<T> {
     }
 }
 
-impl<E,I> FromIterator<I> for FlatArray<E> where I:Iterator<Item = E> + ExactSizeIterator {
+impl<E, I> FromIterator<I> for FlatArray<E>
+where
+    I: Iterator<Item = E> + ExactSizeIterator,
+{
     /// Build the `FlatArray` from an iterator over vectors. Prefer to
     /// use the `From(Vec<Vec<T>>)` implementation over `from_iter`:
     /// they pre-allocate a minimal amount of memory before filling
