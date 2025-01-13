@@ -99,18 +99,18 @@ impl<'a, T> FlatArray<T> {
     }
     /// Returns an iterator over the arrays/vectors used to build the
     /// `FlatArray`. The iterator will return a slice of type `&[T]`.
-    pub fn iter_arrays(&'a self) -> ArrayIter<'a, T> {
-        ArrayIter::new(self)
+    pub fn iter_arrays(&'a self) -> ArraysIter<'a, T> {
+        ArraysIter::new(self)
     }
     /// Returns an iterator over the arrays/vectors used to build the
     /// `FlatArray`. The iterator will return a slice of type `&mut
     /// [T]`.
-    pub fn iter_arrays_mut(&'a mut self) -> VecsIterMut<'a, T> {
-        VecsIterMut::new(self)
+    pub fn iter_arrays_mut(&'a mut self) -> ArraysIterMut<'a, T> {
+        ArraysIterMut::new(self)
     }
 }
 
-pub struct ArrayIter<'a, T>
+pub struct ArraysIter<'a, T>
 where
     T: 'a,
 {
@@ -119,7 +119,7 @@ where
     counter: usize,
 }
 
-impl<'a, T> ArrayIter<'a, T> {
+impl<'a, T> ArraysIter<'a, T> {
     fn new(token_vecs: &'a FlatArray<T>) -> Self {
         Self {
             indice_index: 0,
@@ -128,7 +128,7 @@ impl<'a, T> ArrayIter<'a, T> {
         }
     }
 }
-impl<'a, T> Iterator for ArrayIter<'a, T> {
+impl<'a, T> Iterator for ArraysIter<'a, T> {
     type Item = &'a [T];
     // NOTE: Inlining this function seems to _reduce_ the performance
     // #[inline(always)]
@@ -144,14 +144,14 @@ impl<'a, T> Iterator for ArrayIter<'a, T> {
     }
 }
 
-pub struct VecsIterMut<'a, T> {
+pub struct ArraysIterMut<'a, T> {
     indice_index: usize,
     token_vecs: &'a mut FlatArray<T>,
     counter: usize,
     phantom_data: PhantomData<&'a T>,
 }
 
-impl<'a, T> VecsIterMut<'a, T> {
+impl<'a, T> ArraysIterMut<'a, T> {
     fn new(token_vecs: &'a mut FlatArray<T>) -> Self {
         Self {
             indice_index: 0,
@@ -162,7 +162,7 @@ impl<'a, T> VecsIterMut<'a, T> {
     }
 }
 
-impl<'a, T> Iterator for VecsIterMut<'a, T> {
+impl<'a, T> Iterator for ArraysIterMut<'a, T> {
     type Item = &'a mut [T];
     // NOTE: Inlining this function seems to reduce the performance
     // #[inline(always)]
