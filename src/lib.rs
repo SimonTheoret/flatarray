@@ -2,7 +2,7 @@
 /// is called a `FlatArray` and is a cache-friendly alternative to a
 /// Vec<Vec<T>>. Instead, a `FlatArray` is of fixed size but can be
 /// iterated over as if it was a `Vec<Vec<T>>`, with the help of the
-/// `vec_array` and `vec_array_mut` methods.
+/// `iter_arrays` and `iter_arrays_mut` methods.
 ///
 /// This crate is intended to be used by other crates, such as `named_entity` and
 /// `rusev`, which explains why its API surface is so small.
@@ -14,8 +14,8 @@ use std::slice::Iter;
 /// Custom datastructure built for reducing cache misses.
 #[derive(Debug, Eq, PartialEq, PartialOrd, Ord, Hash, Clone, Default)]
 pub struct FlatArray<T> {
-    pub(crate) content: Box<[T]>,
-    pub(crate) indices: Box<[usize]>,
+    content: Box<[T]>,
+    indices: Box<[usize]>,
 }
 
 impl<T> FlatArray<T> {
