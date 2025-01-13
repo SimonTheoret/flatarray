@@ -7,9 +7,7 @@
 /// This crate is intended to be used by other crates, such as `named_entity` and
 /// `rusev`, which explains why its API surface is so small.
 use std::borrow::Cow;
-use std::marker::PhantomData;
-use std::ops::Deref;
-use std::slice::Iter;
+use std::{marker::PhantomData, ops::Deref, slice::Iter};
 
 /// Custom datastructure built for reducing cache misses.
 #[derive(Debug, Eq, PartialEq, PartialOrd, Ord, Hash, Clone, Default)]
