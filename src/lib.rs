@@ -38,6 +38,30 @@ impl<T> Deref for FlatArray<T> {
     }
 }
 
+impl<E> FromIterator<Vec<E>> for FlatArray<E> {
+    /// Build the `FlatArray` from an iterator over vectors. Prefer to
+    /// use the `From(Vec<Vec<T>>)` implementation over `from_iter`:
+    /// they pre-allocate a minimal amount of memory before filling
+    /// the `FlatArray`.
+    fn from_iter<T: IntoIterator<Item = Vec<E>>>(iter: T) -> Self {
+        let mut flattened = Vec::new();
+        let mut indices = Vec::new();
+        indices.push(0);
+        for vec in iter.into_iter() {
+            indices.push(indices.last().unwrap() + vec.len());
+            for s in vec {
+                flattened.push(s);
+            }
+        }
+        let tokens = flattened.into_boxed_slice();
+        let indices_boxed = indices.into_boxed_slice();
+        Self {
+            content: tokens,
+            indices: indices_boxed,
+        }
+    }
+}
+
 impl<T> From<Vec<Vec<T>>> for FlatArray<T> {
     #[inline(always)]
     fn from(value: Vec<Vec<T>>) -> Self {
