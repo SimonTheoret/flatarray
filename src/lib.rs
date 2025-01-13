@@ -22,14 +22,12 @@ impl<T> FlatArray<T> {
     }
 }
 
-// impl<T> FlatArray<T> {
-//     pub fn len(&self) -> usize {
-//         self.content.len()
-//     }
-//     pub fn is_empty(&self) -> bool {
-//         self.content.is_empty()
-//     }
-// }
+impl<T> FlatArray<T> {
+    /// Borrows the content of the FlatArray as a slice.
+    pub fn get_content(&self) -> &[T] {
+        self.content.as_ref()
+    }
+}
 
 impl<T> Deref for FlatArray<T> {
     type Target = [T];
