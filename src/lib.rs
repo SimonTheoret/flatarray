@@ -9,6 +9,49 @@
 use std::borrow::Cow;
 use std::{marker::PhantomData, ops::Deref, slice::Iter};
 
+#[derive(Debug)]
+/// This struct can be used to dynamically build a `FlatArray` by
+/// pushing element into it.
+pub struct FlatArrayBuilder<T> {
+    content: Vec<T>,
+    indices: Vec<usize>,
+}
+
+impl<T> FlatArrayBuilder<T> {
+    pub fn push_exact_sized<I: IntoIterator<Item = T> + ExactSizeIterator>(&mut self, item: I) {
+        unsafe {
+            self.indices
+                .push(self.indices.last().unwrap_unchecked() + item.len())
+        };
+        for s in item {
+            self.content.push(s);
+        }
+    }
+    pub fn push<I: IntoIterator<Item = T>>(&mut self, item: I) {
+        let mut current_indice = unsafe { *self.indices.last().unwrap_unchecked() };
+        for s in item {
+            self.content.push(s);
+            current_indice += 1;
+        }
+        self.indices.push(current_indice)
+    }
+    pub fn build(self) -> FlatArray<T> {
+        FlatArray {
+            content: self.content.into_boxed_slice(),
+            indices: self.indices.into_boxed_slice(),
+        }
+    }
+}
+
+impl<T> Default for FlatArrayBuilder<T> {
+    fn default() -> Self {
+        Self {
+            content: vec![],
+            indices: vec![0],
+        }
+    }
+}
+
 /// Custom datastructure built for reducing cache misses.
 #[derive(Debug, Eq, PartialEq, PartialOrd, Ord, Hash, Clone, Default)]
 pub struct FlatArray<T> {
