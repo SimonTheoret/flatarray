@@ -1,3 +1,4 @@
+use serde::{Deserialize, Serialize};
 /// Small crate containing a custom datastructure. This datastructure
 /// is called a `FlatArray` and is a cache-friendly alternative to a
 /// Vec<Vec<T>>. Instead, a `FlatArray` is of fixed size but can be
@@ -53,6 +54,7 @@ impl<T> Default for FlatArrayBuilder<T> {
 }
 
 /// Custom datastructure built for reducing cache misses.
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[derive(Debug, Eq, PartialEq, PartialOrd, Ord, Hash, Clone, Default)]
 pub struct FlatArray<T> {
     content: Box<[T]>,
