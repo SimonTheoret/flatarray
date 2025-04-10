@@ -55,10 +55,18 @@ impl<T> Default for FlatArrayBuilder<T> {
 
 /// Custom datastructure built for reducing cache misses.
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
-#[derive(Debug, Eq, PartialEq, PartialOrd, Ord, Hash, Clone, Default)]
+#[derive(Debug, Eq, PartialEq, PartialOrd, Ord, Hash, Clone)]
 pub struct FlatArray<T> {
     content: Box<[T]>,
     indices: Box<[usize]>,
+}
+
+impl<T> Default for FlatArray<T> {
+    fn default() -> Self {
+        let content: Box<[T]> = Box::new([]);
+        let indices: Box<[usize]> = Box::new([]);
+        Self { content, indices }
+    }
 }
 
 impl<T> FlatArray<T> {
