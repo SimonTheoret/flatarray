@@ -1,9 +1,9 @@
 [package]
 name = "flatarray"
-version = "0.7.1"
+version = "1.0.0"
 edition = "2021"
 authors = ["Simon Théorêt <simonteoret@hotmail.com"]
-description = "Fast implementation of SeqEval, a sequence evaluation framework"
+description = "Implementation of a flattened iterator, that acts as if it still was an iterator of iterator"
 license = "MIT"
 repository = "https://github.com/SimonTheoret/flatarray"
 keywords = ["Datastructure", "Vector", "Array"]
