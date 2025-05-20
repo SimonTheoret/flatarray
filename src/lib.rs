@@ -8,17 +8,18 @@ use serde::{Deserialize, Serialize};
 /// This crate is intended to be used by other crates, such as `named_entity` and
 /// `rusev`, which explains why its API surface is so small.
 use std::borrow::Cow;
+use std::ops::Index;
 use std::{marker::PhantomData, ops::Deref, slice::Iter};
 
 #[derive(Debug)]
-/// This struct can be used to dynamically build a `FlatArray` by
-/// pushing element into it.
-pub struct FlatArrayBuilder<T> {
+/// This struct can be used to dynamically build a `FlatArray` or a FlatVec by pushing element into
+/// it.
+pub struct FlatBuilder<T> {
     content: Vec<T>,
     indices: Vec<usize>,
 }
 
-impl<T> FlatArrayBuilder<T> {
+impl<T> FlatBuilder<T> {
     pub fn push_exact_sized<I: IntoIterator<Item = T> + ExactSizeIterator>(&mut self, item: I) {
         unsafe {
             self.indices
@@ -36,7 +37,13 @@ impl<T> FlatArrayBuilder<T> {
         }
         self.indices.push(current_indice)
     }
-    pub fn build(self) -> FlatArray<T> {
+    pub fn build_flatvec(self) -> FlatVec<T> {
+        FlatVec {
+            content: self.content,
+            indices: self.indices,
+        }
+    }
+    pub fn build_flatarray(self) -> FlatArray<T> {
         FlatArray {
             content: self.content.into_boxed_slice(),
             indices: self.indices.into_boxed_slice(),
@@ -44,7 +51,7 @@ impl<T> FlatArrayBuilder<T> {
     }
 }
 
-impl<T> Default for FlatArrayBuilder<T> {
+impl<T> Default for FlatBuilder<T> {
     fn default() -> Self {
         Self {
             content: vec![],
@@ -53,7 +60,19 @@ impl<T> Default for FlatArrayBuilder<T> {
     }
 }
 
-/// Custom datastructure built for reducing cache misses.
+pub trait FlattenedCollection<T>: Index<usize> {
+    fn indices_len(&self) -> usize;
+    fn get_indices(&self, index: usize) -> usize;
+}
+
+#[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
+#[derive(Debug, Eq, PartialEq, PartialOrd, Ord, Hash, Clone)]
+pub struct FlatVec<T> {
+    content: Vec<T>,
+    indices: Vec<usize>,
+}
+
+/// Custom datastructure built for reducing cache misses. This is a unmutable datastructure
 #[cfg_attr(feature = "serde", derive(Deserialize, Serialize))]
 #[derive(Debug, Eq, PartialEq, PartialOrd, Ord, Hash, Clone)]
 pub struct FlatArray<T> {
@@ -192,12 +211,13 @@ impl<'a, T> FlatArray<T> {
     }
 }
 
-pub struct ArraysIter<'a, T>
+pub struct ArraysIter<'a, Flat, T>
 where
+    Flat: FlattenedCollection<T>,
     T: 'a,
 {
     indice_index: usize,
-    token_vecs: &'a FlatArray<T>,
+    token_vecs: &'a Flat<T>,
     counter: usize,
 }
 
@@ -215,7 +235,7 @@ impl<'a, T> Iterator for ArraysIter<'a, T> {
     // NOTE: Inlining this function seems to _reduce_ the performance
     // #[inline(always)]
     fn next(&mut self) -> Option<Self::Item> {
-        if self.token_vecs.indices.len() == 0 || self.counter >= self.token_vecs.indices.len() - 1 {
+        if self.token_vecs.indices.is_empty() || self.counter >= self.token_vecs.indices.len() - 1 {
             return None;
         }
         let start = unsafe { *self.token_vecs.indices.get_unchecked(self.indice_index) };
@@ -341,5 +361,15 @@ mod test {
             vec!["O", "O", "O", "B-MISC", "I-MISC", "I-MISC", "O"],
             vec!["B-PER", "I-PER", "O"],
         ]
+    }
+    fn setup_flattened_iter<T>(input: Vec<Vec<T>>, flattened_typ: str) -> Box<dyn Flat> {}
+    #[test]
+    fn build_vec() {
+        let input = vec![
+            vec!["this", "is", "the", "first", "sentence"],
+            vec!["this", "is", "the", "second", "sentence"],
+            vec!["this", "is", "the", "second", "sentence"],
+        ];
+        let builder = FlatBuilder::default().push_exact_sized(input);
     }
 }
