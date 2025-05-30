@@ -41,6 +41,7 @@
               shfmt
               nodePackages_latest.bash-language-server
               cargo-expand
+              lua-language-server
             ]);
         };
       }
