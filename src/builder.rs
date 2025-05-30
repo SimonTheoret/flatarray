@@ -1,6 +1,9 @@
+use std::mem::take;
+
 use serde::{Deserialize, Serialize};
 
 use crate::FlatArray;
+use crate::FlatStr;
 use crate::FlatVec;
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -29,6 +32,32 @@ impl<T> FlatBuilder<T> {
         }
         self.indices.push(current_indice)
     }
+
+    pub fn push_owned<I, B>(&mut self, item: I)
+    where
+        I: IntoIterator<Item = B>,
+        B: ToOwned<Owned = T>,
+    {
+        let mut current_indice = unsafe { *self.indices.last().unwrap_unchecked() };
+        for s in item {
+            self.content.push(s.to_owned());
+            current_indice += 1;
+        }
+        self.indices.push(current_indice)
+    }
+    // pub fn push_str<I, S>(&mut self, item: I)
+    // where
+    //     I: IntoIterator<Item = S>,
+    //     S: Deref<Target = str>,
+    // {
+    //     let mut current_indice = unsafe { *self.indices.last().unwrap_unchecked() };
+    //     for s in item {
+    //         self.content.push(s.deref().as_bytes());
+    //         current_indice += 1;
+    //     }
+    //     self.indices.push(current_indice)
+    // }
+
     pub fn build_flatvec(self) -> FlatVec<T> {
         FlatVec {
             content: self.content,
@@ -40,6 +69,28 @@ impl<T> FlatBuilder<T> {
             content: self.content.into_boxed_slice(),
             indices: self.indices.into_boxed_slice(),
         }
+    }
+}
+impl FlatBuilder<u8> {
+    pub fn build_flatstr(self) -> FlatStr {
+        FlatStr {
+            content: self.content,
+            indices: self.indices,
+        }
+    }
+}
+
+impl<T: Default> FlatBuilder<T> {
+    pub fn push_take<I>(&mut self, item: I)
+    where
+        I: IntoIterator<Item = T>,
+    {
+        let mut current_indice = unsafe { *self.indices.last().unwrap_unchecked() };
+        for mut s in item {
+            self.content.push(take(&mut s));
+            current_indice += 1;
+        }
+        self.indices.push(current_indice)
     }
 }
 

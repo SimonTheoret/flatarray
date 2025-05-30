@@ -14,13 +14,13 @@ impl<T> FlattenedCollection<T> for FlatVec<T> {
         self.indices.len()
     }
     unsafe fn get_indices(&self, index: usize) -> usize {
-        *self.indices.get_unchecked(index)
+        unsafe { *self.indices.get_unchecked(index) }
     }
-    unsafe fn get_content<'a>(&'a self, range: std::ops::Range<usize>) -> &'a [T] {
-        self.content.get_unchecked(range)
+    unsafe fn get_content(&self, range: std::ops::Range<usize>) -> &[T] {
+        unsafe { self.content.get_unchecked(range) }
     }
-    unsafe fn get_mut_content<'a>(&'a mut self, range: std::ops::Range<usize>) -> &'a mut [T] {
-        self.content.get_unchecked_mut(range)
+    unsafe fn get_mut_content(&mut self, range: std::ops::Range<usize>) -> &mut [T] {
+        unsafe { self.content.get_unchecked_mut(range) }
     }
 }
 

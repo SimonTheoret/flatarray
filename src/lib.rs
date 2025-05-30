@@ -14,19 +14,16 @@ mod builder;
 pub use self::builder::FlatBuilder; // re-export the builder
 mod iterator;
 pub use self::iterator::{FlattenedCollection, Iter, IterMut};
+mod str;
+pub use self::str::FlatStr;
 
 #[cfg(test)]
 mod test {
     use core::panic;
 
     use super::*;
-    fn build_vecs() -> Vec<Vec<&'static str>> {
-        vec![
-            vec!["O", "O", "O", "B-MISC", "I-MISC", "I-MISC", "O"],
-            vec!["B-PER", "I-PER", "O"],
-        ]
-    }
-    fn setup_flattened_iter<T>(
+
+    fn setup_flattened_iter(
         flattened_typ: &'static str,
     ) -> (
         Box<dyn FlattenedCollection<&'static str>>,
@@ -42,11 +39,25 @@ mod test {
             builder.push(v);
         }
         if flattened_typ == "vec" {
-            return (Box::new(builder.build_flatvec()), input);
+            (Box::new(builder.build_flatvec()), input)
         } else if flattened_typ == "array" {
-            return (Box::new(builder.build_flatarray()), input);
+            (Box::new(builder.build_flatarray()), input)
         } else {
             panic!("Wrong flattened collection type");
         }
+    }
+
+    #[test]
+    fn test_flatvec_len() {
+        let (flat_vec, expected) = setup_flattened_iter("vec");
+        let vectored: Vec<_> = Iter::new(&flat_vec).collect();
+        assert!(expected.len() == vectored.len())
+    }
+
+    #[test]
+    fn test_flatarray_len() {
+        let (flat_vec, expected) = setup_flattened_iter("array");
+        let vectored: Vec<_> = Iter::new(&flat_vec).collect();
+        assert!(expected.len() == vectored.len())
     }
 }
