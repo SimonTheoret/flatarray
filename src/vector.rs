@@ -60,7 +60,7 @@ where
 {
     /// Build the `FlatArray` from an iterator over vectors. Prefer to
     /// use the `From(Vec<Vec<T>>)` implementation over `from_iter`:
-    /// they pre-allocate a minimal amount of memory before filling
+    /// it pre-allocate a minimal amount of memory before filling
     /// the `FlatArray`.
     fn from_iter<T: IntoIterator<Item = I>>(iter: T) -> Self {
         let mut flattened = Vec::new();
